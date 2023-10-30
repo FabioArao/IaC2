@@ -82,7 +82,3 @@ output "my_public_ip" {
 #
 #
 #
-##vpc-0e8c045ddf090fd07
-##i-0686a68ca095480c4
-##access_key = "AKIAWJVND35EAM66T6W4"
-##secret_key = "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"
