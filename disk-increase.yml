@@ -1,0 +1,71 @@
+#ansible-playbook
+---
+- hosts: localhost
+  user: ubuntu
+  become: true
+  vars_files:
+    - vars.yml
+
+  - tasks:
+    - name: create demo directories
+      file:
+        state: directory
+        path: "/mnt/{{ item }}"
+      with_items:
+        - config
+        - data1
+
+    - name: create volume groups
+      lvg:
+        vg: "{{ item.key }}"
+        pvs: "{{ item.value.pvs|join(',') }}"
+        state: present
+      with_dict: "{{ lvm_config['vgs'] }}"
+      tags:
+        - lvm
+
+    - name: Conduct resize test of physical volumes
+      shell: "pvresize {{ item }} -v -t"
+      with_items: "{{ lvm_config['pvs'] }}"
+      changed_when: false
+      register: lvm_pvresize_output
+      tags:
+        - lvm
+        - resizefs
+    
+    - name: Creating/extending logical volumes
+      lvol:
+        vg: "{{ item.vg }}"
+        lv: "{{ item.name }}"
+        size: "{{ item.size }}"
+        opts: "{{ item.opts|default('') }}"
+        state: present
+      with_items: "{{ lvm_config['lvols'] }}"  # Updated variable name
+      tags:
+        - lvm
+        - resizefs
+    
+ #   - name: Format filesystems
+ #     filesystem:
+ #       dev: "{{ item.value.dev }}"
+ #       fstype: "{{ item.value.fstype }}"  # Use 'fstype' from the dictionary
+ #       opts: "{{ item.value.opts }}"
+ #       resizefs: yes
+ #     with_dict: "{{ filesystem_config }}"
+ #     tags:
+ #   - filesystems
+ #   - resizefs
+#
+#
+ #   - name: Mount filesystems
+ #     mount:
+ #       src: "{{ item.dev }}"
+ #       name: "{{ item.mountpoint }}"
+ #       opts: "{{ item.opts }}"
+ #       fstype: "{{ item.fstype }}"
+ #       state: "{{ item.state }}"
+ #       passno: "{{ item.passno }}"
+ #       dump: "{{ item.dump }}"
+ #     with_dict: "{{ mounts_config }}"
+ #     tags:
+ #       - mount

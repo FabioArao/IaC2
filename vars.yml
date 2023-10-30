@@ -1,0 +1,44 @@
+#vars.yml
+---
+lvm_config:
+  pvs:
+    - /dev/xvdf
+  vgs:
+      vgdemo:
+          pvs:
+              - /dev/xvdf
+  lvols:  # Add this key for logical volumes
+    - name: lvm_config
+      vg: vgdemo
+      size: 1G
+    - name: lvdata1
+      vg: vgdemo
+      size: "+100%FREE"
+ 
+filesystem_config:
+  config:
+      dev: vgdemo/lvm_config
+      fstype: ext4
+      opts: ''
+  data1:
+      dev: vgdemo/lvdata1
+      fstype: ext4
+      opts: ''
+
+mounts_config:
+  config:
+      dev: /dev/vgdemo/lvm_config
+      fstype: ext4
+      opts: 'noatime,nodiratime'
+      mountpoint: /mnt/config
+      dump: 0
+      passno: '2'
+      state: mounted
+  data1:
+      dev: /dev/vgdemo/lvdata1
+      fstype: ext4
+      opts: 'noatime,nodiratime'
+      mountpoint: /mnt/data1
+      dump: 0
+      passno: '2'
+      state: mounted

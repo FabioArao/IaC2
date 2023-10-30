@@ -1,0 +1,4 @@
+- hosts: localhost
+  user: ubuntu
+  become: true
+  command: sudo lvextend -r -l +100%FREE /dev/mapper/vgdemo-lvdata1
